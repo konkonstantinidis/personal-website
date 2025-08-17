@@ -1,0 +1,250 @@
+name: Deploy to Production (DEPRECATED)
+
+# ⚠️  DEPRECATED WORKFLOW ⚠️
+# This workflow has been replaced by separate infrastructure and application workflows.
+# Please use the new workflows for better separation of concerns:
+# - Infrastructure Deployment: .github/workflows/infrastructure.yml
+# - Application Deployment: .github/workflows/app-deploy.yml
+# - Orchestrator: .github/workflows/orchestrator.yml
+#
+# This workflow is kept for backwards compatibility and will be removed in a future version.
+
+on:
+  # Disabled automatic triggers - use new workflows instead
+  # push:
+  #   branches: [main]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - production
+          - staging
+      force_invalidation:
+        description: 'Force CloudFront cache invalidation'
+        required: false
+        default: false
+        type: boolean
+
+env:
+  NODE_VERSION: '18'
+  AWS_REGION: 'eu-west-1'
+
+jobs:
+  # Build and test job
+  build:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    outputs:
+      artifact-id: ${{ steps.artifact.outputs.artifact-id }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run type checking
+        run: npm run type-check
+
+      - name: Run format check
+        run: npm run format:check
+
+      - name: Build application
+        run: npm run build
+        env:
+          NODE_ENV: production
+
+      - name: Verify build output
+        run: |
+          if [ ! -d "dist" ]; then
+            echo "Build failed: dist directory not found"
+            exit 1
+          fi
+          if [ ! -f "dist/index.html" ]; then
+            echo "Build failed: index.html not found in dist"
+            exit 1
+          fi
+          echo "Build verification passed"
+          ls -la dist/
+
+      - name: Upload build artifacts
+        id: artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifacts-${{ github.sha }}
+          path: dist/
+          retention-days: 30
+          compression-level: 9
+
+  # Deploy to production
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: https://konstantinos-konstantinidis.gr
+    permissions:
+      id-token: write   # Required for OIDC
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            terraform/
+          sparse-checkout-cone-mode: false
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifacts-${{ github.sha }}
+          path: dist/
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-Deploy-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: '~1.0'
+          terraform_wrapper: false
+
+      - name: Get Terraform outputs
+        id: terraform
+        working-directory: terraform
+        run: |
+          terraform init -backend=false
+          
+          # Get outputs from state (assuming state is stored remotely)
+          # If using local state, you might need to initialize with backend config
+          echo "s3-bucket=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
+          echo "cloudfront-id=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_OUTPUT
+          echo "website-url=$(terraform output -raw website_url)" >> $GITHUB_OUTPUT
+
+      - name: Deploy to S3
+        run: |
+          # Set optimal cache headers for different file types
+          
+          # HTML files - no cache (always check for updates)
+          aws s3 sync dist/ s3://${{ steps.terraform.outputs.s3-bucket }}/ \
+            --exclude "*" \
+            --include "*.html" \
+            --cache-control "no-cache, no-store, must-revalidate" \
+            --metadata-directive REPLACE \
+            --delete
+          
+          # CSS and JS files with hash - long cache (1 year)
+          aws s3 sync dist/ s3://${{ steps.terraform.outputs.s3-bucket }}/ \
+            --exclude "*" \
+            --include "*.css" \
+            --include "*.js" \
+            --cache-control "max-age=31536000, immutable" \
+            --metadata-directive REPLACE
+          
+          # Images and other assets - medium cache (1 month)
+          aws s3 sync dist/ s3://${{ steps.terraform.outputs.s3-bucket }}/ \
+            --exclude "*" \
+            --include "*.png" \
+            --include "*.jpg" \
+            --include "*.jpeg" \
+            --include "*.gif" \
+            --include "*.svg" \
+            --include "*.ico" \
+            --include "*.webp" \
+            --include "*.webmanifest" \
+            --cache-control "max-age=2592000" \
+            --metadata-directive REPLACE
+          
+          # All other files - default cache (1 day)
+          aws s3 sync dist/ s3://${{ steps.terraform.outputs.s3-bucket }}/ \
+            --cache-control "max-age=86400" \
+            --metadata-directive REPLACE \
+            --delete
+
+      - name: Invalidate CloudFront cache
+        run: |
+          # Create invalidation for all files
+          INVALIDATION_ID=$(aws cloudfront create-invalidation \
+            --distribution-id ${{ steps.terraform.outputs.cloudfront-id }} \
+            --paths "/*" \
+            --query 'Invalidation.Id' \
+            --output text)
+          
+          echo "Created CloudFront invalidation: $INVALIDATION_ID"
+          echo "invalidation-id=$INVALIDATION_ID" >> $GITHUB_OUTPUT
+          
+          # Wait for invalidation to complete (optional - can be removed for faster deploys)
+          echo "Waiting for invalidation to complete..."
+          aws cloudfront wait invalidation-completed \
+            --distribution-id ${{ steps.terraform.outputs.cloudfront-id }} \
+            --id $INVALIDATION_ID
+          
+          echo "CloudFront cache invalidation completed"
+
+      - name: Verify deployment
+        run: |
+          # Wait a moment for propagation
+          sleep 10
+          
+          # Check if the website is accessible
+          WEBSITE_URL="${{ steps.terraform.outputs.website-url }}"
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$WEBSITE_URL")
+          
+          if [ "$HTTP_STATUS" = "200" ]; then
+            echo "✅ Website is accessible at $WEBSITE_URL"
+          else
+            echo "❌ Website check failed with HTTP status: $HTTP_STATUS"
+            exit 1
+          fi
+
+      - name: Post deployment summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🚀 Deployment Summary
+          
+          **Environment:** Production
+          **Website URL:** ${{ steps.terraform.outputs.website-url }}
+          **S3 Bucket:** ${{ steps.terraform.outputs.s3-bucket }}
+          **CloudFront Distribution:** ${{ steps.terraform.outputs.cloudfront-id }}
+          **Commit:** \`${{ github.sha }}\`
+          
+          ### 📊 Deployment Details
+          - ✅ Build artifacts uploaded to S3
+          - ✅ CloudFront cache invalidated
+          - ✅ Website accessibility verified
+          
+          ### 🌐 Access Your Website
+          [View Website](${{ steps.terraform.outputs.website-url }})
+          EOF
+
+  # Notify on failure
+  notify-failure:
+    name: Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [build, deploy-production]
+    if: failure()
+    steps:
+      - name: Notify failure
+        run: |
+          echo "🚨 Deployment failed!"
+          echo "Please check the workflow logs for details."
+          # Add Slack/email notification here if needed

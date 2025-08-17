@@ -1,0 +1,472 @@
+name: Infrastructure Deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Environment to deploy to'
+        required: true
+        default: 'production'
+        type: choice
+        options:
+          - staging
+          - production
+      action:
+        description: 'Terraform action to perform'
+        required: true
+        default: 'plan'
+        type: choice
+        options:
+          - plan
+          - apply
+          - destroy
+      auto_approve:
+        description: 'Auto-approve Terraform apply (use with caution)'
+        required: false
+        default: false
+        type: boolean
+  push:
+    paths:
+      - 'terraform/**'
+    branches:
+      - main
+  schedule:
+    # Weekly drift detection on Sundays at 6 AM UTC
+    - cron: '0 6 * * 0'
+
+env:
+  AWS_REGION: 'eu-west-1'
+  TF_VERSION: '~1.0'
+
+jobs:
+  # Validate Terraform configuration
+  validate:
+    name: Validate Terraform
+    runs-on: ubuntu-latest
+    outputs:
+      tf-fmt-check: ${{ steps.fmt.outputs.changed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      - name: Terraform Format Check
+        id: fmt
+        working-directory: terraform
+        run: |
+          terraform fmt -check -diff -recursive
+          echo "changed=$?" >> $GITHUB_OUTPUT
+        continue-on-error: true
+
+      - name: Terraform Init (validation only)
+        working-directory: terraform
+        run: terraform init -backend=false
+
+      - name: Terraform Validate
+        working-directory: terraform
+        run: terraform validate
+
+      - name: Security Scan with tfsec
+        uses: aquasecurity/tfsec-action@v1.0.3
+        with:
+          working_directory: terraform
+          soft_fail: true
+
+  # Plan infrastructure changes
+  plan:
+    name: Plan Infrastructure Changes
+    runs-on: ubuntu-latest
+    needs: validate
+    if: github.event_name != 'schedule'
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+    permissions:
+      id-token: write   # Required for OIDC
+      contents: read
+      pull-requests: write  # For PR comments
+    outputs:
+      tf-plan-exists: ${{ steps.plan.outputs.plan-exists }}
+      tf-plan-exitcode: ${{ steps.plan.outputs.exitcode }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_INFRASTRUCTURE_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-Infrastructure-Plan-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        id: init
+        working-directory: terraform
+        run: |
+          terraform init
+          echo "✅ Terraform initialized successfully"
+
+      - name: Terraform Plan
+        id: plan
+        working-directory: terraform
+        run: |
+          # Create detailed plan with output
+          terraform plan -detailed-exitcode -out=tfplan -input=false
+          EXITCODE=$?
+          
+          echo "exitcode=$EXITCODE" >> $GITHUB_OUTPUT
+          echo "plan-exists=true" >> $GITHUB_OUTPUT
+          
+          # Generate human-readable plan
+          terraform show -no-color tfplan > plan.txt
+          
+          # Check if there are changes
+          if [ $EXITCODE -eq 2 ]; then
+            echo "📋 Infrastructure changes detected"
+            echo "HAS_CHANGES=true" >> $GITHUB_ENV
+          elif [ $EXITCODE -eq 0 ]; then
+            echo "✅ No infrastructure changes needed"
+            echo "HAS_CHANGES=false" >> $GITHUB_ENV
+          else
+            echo "❌ Terraform plan failed"
+            exit $EXITCODE
+          fi
+
+      - name: Upload Terraform Plan
+        if: steps.plan.outputs.plan-exists == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan-${{ github.event.inputs.environment || 'production' }}-${{ github.sha }}
+          path: terraform/tfplan
+          retention-days: 5
+
+      - name: Comment PR with Plan
+        if: github.event_name == 'pull_request' && steps.plan.outputs.plan-exists == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const plan = fs.readFileSync('terraform/plan.txt', 'utf8');
+            const truncatedPlan = plan.length > 60000 ? plan.substring(0, 60000) + '\n\n... (truncated)' : plan;
+            
+            const output = `## 🏗️ Terraform Plan Results
+            
+            ### Environment: ${{ github.event.inputs.environment || 'production' }}
+            
+            **Plan Status**: ${{ env.HAS_CHANGES == 'true' && '📋 Changes Detected' || '✅ No Changes' }}
+            
+            <details>
+            <summary>📖 Show Plan Details</summary>
+            
+            \`\`\`terraform
+            ${truncatedPlan}
+            \`\`\`
+            
+            </details>
+            
+            ---
+            
+            🤖 Generated by [Infrastructure Workflow](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            `;
+            
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: output
+            });
+
+  # Apply infrastructure changes
+  apply:
+    name: Apply Infrastructure Changes
+    runs-on: ubuntu-latest
+    needs: [validate, plan]
+    if: |
+      (github.event.inputs.action == 'apply' || 
+       (github.event_name == 'push' && github.ref == 'refs/heads/main')) &&
+      needs.plan.outputs.tf-plan-exitcode == '2'
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}
+    permissions:
+      id-token: write   # Required for OIDC
+      contents: read
+    outputs:
+      infrastructure-outputs: ${{ steps.outputs.outputs.infrastructure-outputs }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_INFRASTRUCTURE_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-Infrastructure-Apply-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Download Terraform Plan
+        if: github.event.inputs.action == 'apply'
+        uses: actions/download-artifact@v4
+        with:
+          name: terraform-plan-${{ github.event.inputs.environment || 'production' }}-${{ github.sha }}
+          path: terraform/
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform Apply
+        working-directory: terraform
+        run: |
+          if [ "${{ github.event.inputs.action }}" == "apply" ] && [ -f "tfplan" ]; then
+            echo "🚀 Applying infrastructure changes from plan..."
+            if [ "${{ github.event.inputs.auto_approve }}" == "true" ]; then
+              terraform apply tfplan
+            else
+              echo "❌ Manual approval required. Set auto_approve to true to proceed."
+              exit 1
+            fi
+          elif [ "${{ github.event_name }}" == "push" ]; then
+            echo "🚀 Auto-applying infrastructure changes from push to main..."
+            terraform apply -auto-approve
+          else
+            echo "❌ No valid apply condition met"
+            exit 1
+          fi
+
+      - name: Get Infrastructure Outputs
+        id: outputs
+        working-directory: terraform
+        run: |
+          # Export all Terraform outputs as JSON
+          terraform output -json > outputs.json
+          
+          # Extract key outputs
+          S3_BUCKET=$(terraform output -raw s3_bucket_name || echo "")
+          CLOUDFRONT_ID=$(terraform output -raw cloudfront_distribution_id || echo "")
+          WEBSITE_URL=$(terraform output -raw website_url || echo "")
+          
+          echo "s3-bucket=$S3_BUCKET" >> $GITHUB_OUTPUT
+          echo "cloudfront-id=$CLOUDFRONT_ID" >> $GITHUB_OUTPUT
+          echo "website-url=$WEBSITE_URL" >> $GITHUB_OUTPUT
+          
+          # Create infrastructure outputs artifact
+          cat > infrastructure-outputs.json << EOF
+          {
+            "s3_bucket": "$S3_BUCKET",
+            "cloudfront_id": "$CLOUDFRONT_ID",
+            "website_url": "$WEBSITE_URL",
+            "timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)",
+            "commit_sha": "${{ github.sha }}"
+          }
+          EOF
+          
+          echo "infrastructure-outputs=$(cat infrastructure-outputs.json | jq -c .)" >> $GITHUB_OUTPUT
+
+      - name: Upload Infrastructure Outputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: infrastructure-outputs-${{ github.event.inputs.environment || 'production' }}
+          path: terraform/infrastructure-outputs.json
+          retention-days: 30
+
+      - name: Infrastructure Apply Summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🏗️ Infrastructure Deployment Summary
+          
+          **Environment:** ${{ github.event.inputs.environment || 'production' }}
+          **Action:** Apply
+          **Status:** ✅ Successfully Applied
+          
+          ### 📊 Infrastructure Details
+          - **S3 Bucket:** \`${{ steps.outputs.outputs.s3-bucket }}\`
+          - **CloudFront Distribution:** \`${{ steps.outputs.outputs.cloudfront-id }}\`
+          - **Website URL:** [${{ steps.outputs.outputs.website-url }}](${{ steps.outputs.outputs.website-url }})
+          
+          ### 🔄 Next Steps
+          - Infrastructure is ready for application deployment
+          - Application deployment workflow can now proceed
+          
+          ---
+          
+          **Commit:** \`${{ github.sha }}\`
+          **Timestamp:** $(date -u)
+          EOF
+
+  # Drift detection (scheduled runs)
+  drift-detection:
+    name: Infrastructure Drift Detection
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule'
+    environment:
+      name: production
+    permissions:
+      id-token: write
+      contents: read
+      issues: write  # For creating drift detection issues
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_INFRASTRUCTURE_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-DriftDetection-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Detect Configuration Drift
+        id: drift
+        working-directory: terraform
+        run: |
+          terraform plan -detailed-exitcode -out=drift-plan
+          EXITCODE=$?
+          
+          if [ $EXITCODE -eq 2 ]; then
+            echo "drift-detected=true" >> $GITHUB_OUTPUT
+            echo "🚨 Infrastructure drift detected!"
+            terraform show -no-color drift-plan > drift-details.txt
+          elif [ $EXITCODE -eq 0 ]; then
+            echo "drift-detected=false" >> $GITHUB_OUTPUT
+            echo "✅ No infrastructure drift detected"
+          else
+            echo "❌ Drift detection failed"
+            exit $EXITCODE
+          fi
+
+      - name: Create Drift Detection Issue
+        if: steps.drift.outputs.drift-detected == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const driftDetails = fs.readFileSync('terraform/drift-details.txt', 'utf8');
+            
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: '🚨 Infrastructure Drift Detected',
+              body: `## Infrastructure Drift Alert
+              
+              **Detection Date:** ${new Date().toISOString()}
+              **Environment:** Production
+              
+              Our scheduled drift detection has identified changes in the infrastructure that don't match the current Terraform configuration.
+              
+              ### 📋 Drift Details
+              
+              <details>
+              <summary>Show Detailed Changes</summary>
+              
+              \`\`\`terraform
+              ${driftDetails}
+              \`\`\`
+              
+              </details>
+              
+              ### 🔧 Recommended Actions
+              
+              1. **Review the changes** to understand what has been modified
+              2. **Update Terraform configuration** if the changes are intentional
+              3. **Run infrastructure workflow** to bring infrastructure back to desired state
+              4. **Investigate** if changes were made outside of Terraform
+              
+              ### 🔗 Related Links
+              
+              - [Infrastructure Workflow](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/workflows/infrastructure.yml)
+              - [Drift Detection Run](https://github.com/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId})
+              
+              ---
+              
+              🤖 This issue was automatically created by the Infrastructure Drift Detection workflow.
+              `,
+              labels: ['infrastructure', 'drift-detection', 'ops']
+            });
+
+  # Destroy infrastructure (manual only)
+  destroy:
+    name: Destroy Infrastructure
+    runs-on: ubuntu-latest
+    if: github.event.inputs.action == 'destroy'
+    environment:
+      name: ${{ github.event.inputs.environment || 'production' }}-destroy
+    permissions:
+      id-token: write
+      contents: read
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_INFRASTRUCTURE_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+          role-session-name: GitHubActions-Infrastructure-Destroy-${{ github.run_id }}
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+          terraform_wrapper: false
+
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      - name: Terraform Destroy Plan
+        working-directory: terraform
+        run: |
+          terraform plan -destroy -out=destroy-plan
+          terraform show -no-color destroy-plan
+
+      - name: Terraform Destroy
+        working-directory: terraform
+        run: |
+          if [ "${{ github.event.inputs.auto_approve }}" == "true" ]; then
+            echo "⚠️ Destroying infrastructure..."
+            terraform apply destroy-plan
+            echo "🗑️ Infrastructure destroyed"
+          else
+            echo "❌ Auto approval required for destroy operation"
+            echo "Set auto_approve to true to proceed with destruction"
+            exit 1
+          fi
+
+      - name: Destroy Summary
+        run: |
+          cat >> $GITHUB_STEP_SUMMARY << EOF
+          ## 🗑️ Infrastructure Destruction Summary
+          
+          **Environment:** ${{ github.event.inputs.environment || 'production' }}
+          **Status:** ✅ Successfully Destroyed
+          **Timestamp:** $(date -u)
+          
+          ⚠️ **Important:** All infrastructure resources have been destroyed.
+          To redeploy, run the infrastructure workflow with the 'apply' action.
+          EOF
