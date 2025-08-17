@@ -23,8 +23,7 @@ The deployment pipeline consists of:
 
 Add these secrets to your GitHub repository (Settings → Secrets and Variables → Actions):
 
-- `AWS_INFRASTRUCTURE_ROLE_ARN` - IAM role ARN for infrastructure deployment
-- `AWS_APPLICATION_ROLE_ARN` - IAM role ARN for application deployment
+- `AWS_ROLE_ARN` - IAM role ARN for infrastructure deployment
 
 ### 2. Deploy Infrastructure
 
