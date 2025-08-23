@@ -55,8 +55,8 @@ resource "aws_s3_bucket_public_access_block" "website" {
 
 # CloudFront Origin Access Control
 resource "aws_cloudfront_origin_access_control" "website" {
-  name                              = "${var.bucket_name}-oac"
-  description                       = "OAC for ${var.bucket_name}"
+  name                              = "${aws_s3_bucket.website.id}-oac"
+  description                       = "OAC for ${aws_s3_bucket.website.id}"
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
@@ -64,8 +64,8 @@ resource "aws_cloudfront_origin_access_control" "website" {
 
 # CloudFront Response Headers Policy for Security
 resource "aws_cloudfront_response_headers_policy" "website" {
-  name    = "${var.bucket_name}-security-headers"
-  comment = "Security headers policy for ${var.bucket_name}"
+  name    = "${aws_s3_bucket.website.id}-security-headers"
+  comment = "Security headers policy for ${aws_s3_bucket.website.id}"
 
   security_headers_config {
     strict_transport_security {
@@ -94,12 +94,12 @@ resource "aws_cloudfront_distribution" "website" {
   origin {
     domain_name              = aws_s3_bucket.website.bucket_regional_domain_name
     origin_access_control_id = aws_cloudfront_origin_access_control.website.id
-    origin_id                = "S3-${var.bucket_name}"
+    origin_id                = "S3-${aws_s3_bucket.website.id}"
   }
 
   enabled             = true
   is_ipv6_enabled     = true
-  comment             = "Website distribution for ${var.bucket_name}"
+  comment             = "Website distribution for ${aws_s3_bucket.website.id}"
   default_root_object = var.index_document
 
   aliases = var.domain_name != "" ? compact([var.domain_name, var.subdomain_name]) : []
@@ -107,7 +107,7 @@ resource "aws_cloudfront_distribution" "website" {
   default_cache_behavior {
     allowed_methods            = ["GET", "HEAD", "OPTIONS"]
     cached_methods             = ["GET", "HEAD"]
-    target_origin_id           = "S3-${var.bucket_name}"
+    target_origin_id           = "S3-${aws_s3_bucket.website.id}"
     compress                   = true
     viewer_protocol_policy     = "redirect-to-https"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.website.id
@@ -122,7 +122,7 @@ resource "aws_cloudfront_distribution" "website" {
     path_pattern               = "/assets/*"
     allowed_methods            = ["GET", "HEAD", "OPTIONS"]
     cached_methods             = ["GET", "HEAD"]
-    target_origin_id           = "S3-${var.bucket_name}"
+    target_origin_id           = "S3-${aws_s3_bucket.website.id}"
     compress                   = true
     viewer_protocol_policy     = "redirect-to-https"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.website.id
@@ -135,7 +135,7 @@ resource "aws_cloudfront_distribution" "website" {
     path_pattern               = "*.css"
     allowed_methods            = ["GET", "HEAD", "OPTIONS"]
     cached_methods             = ["GET", "HEAD"]
-    target_origin_id           = "S3-${var.bucket_name}"
+    target_origin_id           = "S3-${aws_s3_bucket.website.id}"
     compress                   = true
     viewer_protocol_policy     = "redirect-to-https"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.website.id
@@ -148,7 +148,7 @@ resource "aws_cloudfront_distribution" "website" {
     path_pattern               = "*.js"
     allowed_methods            = ["GET", "HEAD", "OPTIONS"]
     cached_methods             = ["GET", "HEAD"]
-    target_origin_id           = "S3-${var.bucket_name}"
+    target_origin_id           = "S3-${aws_s3_bucket.website.id}"
     compress                   = true
     viewer_protocol_policy     = "redirect-to-https"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.website.id
@@ -161,7 +161,7 @@ resource "aws_cloudfront_distribution" "website" {
     path_pattern               = "*.png"
     allowed_methods            = ["GET", "HEAD", "OPTIONS"]
     cached_methods             = ["GET", "HEAD"]
-    target_origin_id           = "S3-${var.bucket_name}"
+    target_origin_id           = "S3-${aws_s3_bucket.website.id}"
     compress                   = true
     viewer_protocol_policy     = "redirect-to-https"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.website.id
@@ -174,7 +174,7 @@ resource "aws_cloudfront_distribution" "website" {
     path_pattern               = "*.jpg"
     allowed_methods            = ["GET", "HEAD", "OPTIONS"]
     cached_methods             = ["GET", "HEAD"]
-    target_origin_id           = "S3-${var.bucket_name}"
+    target_origin_id           = "S3-${aws_s3_bucket.website.id}"
     compress                   = true
     viewer_protocol_policy     = "redirect-to-https"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.website.id
@@ -187,7 +187,7 @@ resource "aws_cloudfront_distribution" "website" {
     path_pattern               = "*.svg"
     allowed_methods            = ["GET", "HEAD", "OPTIONS"]
     cached_methods             = ["GET", "HEAD"]
-    target_origin_id           = "S3-${var.bucket_name}"
+    target_origin_id           = "S3-${aws_s3_bucket.website.id}"
     compress                   = true
     viewer_protocol_policy     = "redirect-to-https"
     response_headers_policy_id = aws_cloudfront_response_headers_policy.website.id
