@@ -52,7 +52,7 @@ jobs:
               ref: context.ref,
               inputs: {
                 environment: '${{ github.event.inputs.environment }}',
-                action: '${{ github.event.inputs.force_infrastructure == "true" && "apply" || "plan" }}',
+                action: '${{ github.event.inputs.force_infrastructure == true && ''apply'' || ''plan'' }}',
                 auto_approve: '${{ github.event.inputs.force_infrastructure }}'
               }
             });
