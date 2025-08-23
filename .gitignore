@@ -24,6 +24,22 @@ dist-ssr
 *.sln
 *.sw?
 
+# TypeScript build info
+*.tsbuildinfo
+
+# Generated files
+vite.config.js
+vite.config.d.ts
+
+# Personal files
+*.pdf
+**/CV_*
+**/Resume_*
+
+# Test files
+*-test.tsx
+*-test.ts
+
 # Terraform
 .terraform/
 .terraform.lock.hcl

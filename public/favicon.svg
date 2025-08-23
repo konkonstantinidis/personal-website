@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <style>
+      .kk-bg { fill: #3b82f6; }
+      .kk-text { fill: #ffffff; }
+      @media (prefers-color-scheme: dark) {
+        .kk-bg { fill: #1e293b; }
+        .kk-text { fill: #f1f5f9; }
+      }
+    </style>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:currentColor" />
+      <stop offset="100%" style="stop-color:currentColor" opacity="0.8" />
+    </linearGradient>
+    <linearGradient id="highlight" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.2" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background with rounded corners -->
+  <rect width="64" height="64" rx="12" class="kk-bg" />
+  <rect width="64" height="64" rx="12" fill="url(#highlight)" />
+  
+  <!-- KK Letters with modern geometric design -->
+  <g class="kk-text">
+    <!-- First K -->
+    <g transform="translate(12, 16)">
+      <rect x="0" y="0" width="4" height="32" rx="1" />
+      <polygon points="5,0 14,0 15,2 10,16 7,16 5,10" />
+      <polygon points="5,22 7,16 10,16 15,30 14,32 5,32" />
+    </g>
+    
+    <!-- Second K -->
+    <g transform="translate(34, 16)">
+      <rect x="0" y="0" width="4" height="32" rx="1" />
+      <polygon points="5,0 14,0 15,2 10,16 7,16 5,10" />
+      <polygon points="5,22 7,16 10,16 15,30 14,32 5,32" />
+    </g>
+  </g>
+</svg>
