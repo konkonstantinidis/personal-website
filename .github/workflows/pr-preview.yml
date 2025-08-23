@@ -72,34 +72,34 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const prNumber = context.issue.number;
-            
+
             // Find existing bot comments
             const comments = await github.rest.issues.listComments({
               owner,
               repo,
               issue_number: prNumber,
             });
-            
+
             const botComment = comments.data.find(comment => 
               comment.user.type === 'Bot' && 
               comment.body.includes('🚀 Build Status')
             );
-            
+
             const commentBody = `## 🚀 Build Status
-            
+
             ✅ **Build successful!** Your changes have been built and are ready for review.
-            
+
             **Commit:** \`${{ github.sha }}\`
             **Build Time:** ${new Date().toISOString()}
-            
+
             ### 📊 Build Details
             - ✅ ESLint passed
             - ✅ TypeScript compilation passed
             - ✅ Format check passed
             - ✅ Production build created
-            
+
             _This comment will be updated automatically as you push new commits._`;
-            
+
             if (botComment) {
               await github.rest.issues.updateComment({
                 owner,
@@ -137,34 +137,34 @@ jobs:
   #         sparse-checkout: |
   #           terraform/
   #         sparse-checkout-cone-mode: false
-  # 
+  #
   #     - name: Download build artifacts
   #       uses: actions/download-artifact@v4
   #       with:
   #         name: pr-build-${{ github.event.number }}-${{ github.sha }}
   #         path: dist/
-  # 
+  #
   #     - name: Configure AWS credentials using OIDC
   #       uses: aws-actions/configure-aws-credentials@v4
   #       with:
   #         role-to-assume: ${{ secrets.AWS_STAGING_ROLE_ARN }}
   #         aws-region: ${{ env.AWS_REGION }}
   #         role-session-name: GitHubActions-Preview-${{ github.run_id }}
-  # 
+  #
   #     - name: Deploy to staging S3
   #       id: deploy
   #       run: |
   #         # Deploy to staging bucket with PR prefix
   #         PREVIEW_PREFIX="pr-${{ github.event.number }}"
   #         STAGING_BUCKET="${{ secrets.STAGING_S3_BUCKET }}"
-  #         
+  #
   #         aws s3 sync dist/ s3://${STAGING_BUCKET}/${PREVIEW_PREFIX}/ \
   #           --cache-control "no-cache, no-store, must-revalidate" \
   #           --delete
-  #         
+  #
   #         PREVIEW_URL="https://${STAGING_BUCKET}.s3-website-${{ env.AWS_REGION }}.amazonaws.com/${PREVIEW_PREFIX}/"
   #         echo "preview-url=${PREVIEW_URL}" >> $GITHUB_OUTPUT
-  # 
+  #
   #     - name: Comment on PR with preview link
   #       uses: actions/github-script@v7
   #       with:
@@ -172,16 +172,16 @@ jobs:
   #           const { owner, repo } = context.repo;
   #           const prNumber = context.issue.number;
   #           const previewUrl = '${{ steps.deploy.outputs.preview-url }}';
-  #           
+  #
   #           const commentBody = `## 🔗 Preview Deployment
-  #           
+  #
   #           Your changes have been deployed to a preview environment!
-  #           
+  #
   #           **Preview URL:** [${previewUrl}](${previewUrl})
   #           **Commit:** \`${{ github.sha }}\`
-  #           
+  #
   #           The preview will be automatically updated when you push new commits.`;
-  #           
+  #
   #           await github.rest.issues.createComment({
   #             owner,
   #             repo,
@@ -204,16 +204,16 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const prNumber = context.issue.number;
-            
+
             const commentBody = `## 🧹 Preview Cleanup
-            
+
             The preview deployment for this PR has been cleaned up.
-            
+
             **PR Status:** ${context.payload.pull_request.merged ? 'Merged' : 'Closed'}
             **Final Commit:** \`${{ github.sha }}\`
-            
+
             Thank you for your contribution! 🎉`;
-            
+
             await github.rest.issues.createComment({
               owner,
               repo,
@@ -228,12 +228,12 @@ jobs:
       #     role-to-assume: ${{ secrets.AWS_STAGING_ROLE_ARN }}
       #     aws-region: ${{ env.AWS_REGION }}
       #     role-session-name: GitHubActions-Cleanup-${{ github.run_id }}
-      # 
+      #
       # - name: Remove preview deployment
       #   run: |
       #     PREVIEW_PREFIX="pr-${{ github.event.number }}"
       #     STAGING_BUCKET="${{ secrets.STAGING_S3_BUCKET }}"
-      #     
+      #
       #     aws s3 rm s3://${STAGING_BUCKET}/${PREVIEW_PREFIX}/ --recursive
 
   # Handle build failures
@@ -249,36 +249,36 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const prNumber = context.issue.number;
-            
+
             const commentBody = `## ❌ Build Failed
-            
+
             The build failed for this PR. Please check the workflow logs and fix the issues.
-            
+
             **Commit:** \`${{ github.sha }}\`
             **Failure Time:** ${new Date().toISOString()}
-            
+
             ### 🔍 Common Issues to Check
             - ESLint errors or warnings
             - TypeScript compilation errors
             - Code formatting issues
             - Missing dependencies
-            
+
             [View Workflow Run](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
-            
+
             _This comment will be updated when you push fixes._`;
-            
+
             // Find existing bot comments
             const comments = await github.rest.issues.listComments({
               owner,
               repo,
               issue_number: prNumber,
             });
-            
+
             const botComment = comments.data.find(comment => 
               comment.user.type === 'Bot' && 
               comment.body.includes('🚀 Build Status')
             );
-            
+
             if (botComment) {
               await github.rest.issues.updateComment({
                 owner,

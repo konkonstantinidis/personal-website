@@ -5,6 +5,7 @@ A modern, responsive personal portfolio website built with React, TypeScript, Ta
 ## 🚀 Features
 
 ### ✨ Animations & Interactions
+
 - **Scroll-triggered animations** - Sections fade in and slide up as they come into view
 - **Staggered animations** - Timeline items and skill cards animate with cascading effects
 - **Micro-interactions** - Enhanced hover effects, button animations, and social icon interactions
@@ -13,6 +14,7 @@ A modern, responsive personal portfolio website built with React, TypeScript, Ta
 - **Theme toggle animations** - Smooth transitions between light/dark/system themes
 
 ### 🎨 Design & UX
+
 - **Responsive design** - Optimized for all screen sizes (mobile-first approach)
 - **Dark mode support** - Light, dark, and system theme options
 - **Modern gradient design** - Beautiful gradient backgrounds and accents
@@ -20,6 +22,7 @@ A modern, responsive personal portfolio website built with React, TypeScript, Ta
 - **Accessible design** - WCAG compliant with proper ARIA labels and keyboard navigation
 
 ### 🔧 Technical Features
+
 - **Performance optimized** - Lazy loading, code splitting, and optimized bundles
 - **TypeScript** - Full type safety throughout the application
 - **Error boundaries** - Production-ready error handling
@@ -28,6 +31,7 @@ A modern, responsive personal portfolio website built with React, TypeScript, Ta
 - **Scroll-to-top button** - Appears when scrolling down, smooth animation
 
 ### 📱 Navigation
+
 - **Fixed navigation** - Stays at top with backdrop blur effect
 - **Active section detection** - Automatically highlights current section in nav
 - **Smooth scroll to sections** - Click navigation items for smooth scrolling
@@ -72,24 +76,28 @@ src/
 ## 🎯 Key Components
 
 ### About Section
+
 - Personal introduction with profile photo
 - Social media links with animated icons
 - Call-to-action buttons (contact, resume download)
 - Animated skill tags
 
 ### Skills Section
+
 - Categorized skill display with filtering
 - Animated progress bars
 - Interactive skill cards with hover effects
 - Skills overview statistics
 
 ### Experience Section
+
 - Professional timeline with alternating layout
 - Expandable achievement details
 - Company logos and technology tags
 - Animated timeline dots and connecting lines
 
 ### Navigation
+
 - Active section highlighting
 - Smooth scroll to sections
 - Mobile-responsive design
@@ -98,23 +106,27 @@ src/
 ## 🚀 Getting Started
 
 ### Prerequisites
-- Node.js 18+ 
+
+- Node.js 18+
 - npm or yarn
 
 ### Installation
 
 1. Clone the repository:
+
 ```bash
 git clone <repository-url>
 cd personal-website
 ```
 
 2. Install dependencies:
+
 ```bash
 npm install
 ```
 
 3. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -162,6 +174,7 @@ VITE_APP_TITLE=Your Portfolio
 ### Modifying Animations
 
 Animation settings can be adjusted in:
+
 - `src/hooks/useScrollAnimation.ts` - Scroll-triggered animations
 - Individual components for specific micro-interactions
 - `src/index.css` - Global animation preferences
@@ -169,8 +182,9 @@ Animation settings can be adjusted in:
 ## 📱 Responsive Design
 
 The website is fully responsive with breakpoints:
+
 - Mobile: < 768px
-- Tablet: 768px - 1024px  
+- Tablet: 768px - 1024px
 - Desktop: > 1024px
 
 ## ♿ Accessibility

@@ -26,10 +26,10 @@ jobs:
       - name: Validate package.json
         run: |
           echo "📦 Validating package.json..."
-          
+
           # Check if required scripts exist
           REQUIRED_SCRIPTS=("build" "lint" "type-check" "format:check")
-          
+
           for script in "${REQUIRED_SCRIPTS[@]}"; do
             if npm run | grep -q "^  $script$"; then
               echo "✅ Script '$script' found"
@@ -43,13 +43,13 @@ jobs:
         run: |
           echo "📥 Installing dependencies..."
           npm ci
-          
+
           echo "🧪 Running linting..."
           npm run lint
-          
+
           echo "🔍 Running type checking..."
           npm run type-check
-          
+
           echo "📝 Running format check..."
           npm run format:check
 
@@ -57,18 +57,18 @@ jobs:
         run: |
           echo "🏗️  Testing build process..."
           npm run build
-          
+
           # Verify build output
           if [ ! -d "dist" ]; then
             echo "❌ Build failed: dist directory not found"
             exit 1
           fi
-          
+
           if [ ! -f "dist/index.html" ]; then
             echo "❌ Build failed: index.html not found"
             exit 1
           fi
-          
+
           echo "✅ Build completed successfully"
           echo "📊 Build output:"
           ls -la dist/
@@ -76,10 +76,10 @@ jobs:
       - name: Validate GitHub Actions workflows
         run: |
           echo "🔍 Validating workflow files..."
-          
+
           # Check if workflow files exist
           WORKFLOWS=("deploy.yml" "pr-preview.yml" "validate.yml")
-          
+
           for workflow in "${WORKFLOWS[@]}"; do
             if [ -f ".github/workflows/$workflow" ]; then
               echo "✅ Workflow '$workflow' found"
@@ -92,10 +92,10 @@ jobs:
       - name: Validate documentation
         run: |
           echo "📚 Validating documentation..."
-          
+
           # Check if documentation files exist
           DOCS=("DEPLOYMENT.md" "deployment-iam-policy.json" "oidc-trust-policy.json")
-          
+
           for doc in "${DOCS[@]}"; do
             if [ -f ".github/$doc" ]; then
               echo "✅ Documentation '$doc' found"
@@ -108,7 +108,7 @@ jobs:
       - name: Validate Terraform configuration
         run: |
           echo "🏗️  Validating Terraform configuration..."
-          
+
           if [ -d "terraform" ]; then
             echo "✅ Terraform directory found"
             
@@ -131,7 +131,7 @@ jobs:
         run: |
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🔍 Configuration Validation Report
-          
+
           ### ✅ Validation Results
           - **Package.json**: Valid with all required scripts
           - **Dependencies**: Installed and compatible
@@ -139,15 +139,15 @@ jobs:
           - **GitHub Workflows**: All required workflows present
           - **Documentation**: Complete setup documentation available
           - **Terraform**: Infrastructure configuration validated
-          
+
           ### 📊 Build Statistics
           - **Node.js Version**: ${{ env.NODE_VERSION }}
           - **Build Output Size**: $(du -sh dist 2>/dev/null || echo "N/A")
           - **Total Files**: $(find dist -type f 2>/dev/null | wc -l || echo "N/A")
-          
+
           ### 🚀 Ready for Deployment
           Your configuration is valid and ready for deployment!
-          
+
           **Next Steps:**
           1. Run the setup script: \`.github/setup-aws.sh\`
           2. Configure GitHub secrets
@@ -165,7 +165,7 @@ jobs:
       - name: Check for secrets in code
         run: |
           echo "🔐 Checking for exposed secrets..."
-          
+
           # Check for common secret patterns
           if grep -r -i "aws_access_key_id\|aws_secret_access_key\|password\|secret\|token" \
              --include="*.js" --include="*.ts" --include="*.tsx" --include="*.json" \
@@ -179,14 +179,14 @@ jobs:
       - name: Validate IAM policies
         run: |
           echo "🛡️  Validating IAM policies..."
-          
+
           # Check if policy files contain placeholders
           if grep -q "YOUR_" .github/deployment-iam-policy.json; then
             echo "⚠️  IAM policy contains placeholders - will be updated by setup script"
           else
             echo "✅ IAM policy appears to be configured"
           fi
-          
+
           # Validate JSON syntax
           if python3 -m json.tool .github/deployment-iam-policy.json > /dev/null; then
             echo "✅ IAM deployment policy is valid JSON"
@@ -194,7 +194,7 @@ jobs:
             echo "❌ IAM deployment policy is invalid JSON"
             exit 1
           fi
-          
+
           if python3 -m json.tool .github/oidc-trust-policy.json > /dev/null; then
             echo "✅ OIDC trust policy is valid JSON"
           else

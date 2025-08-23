@@ -56,23 +56,23 @@ jobs:
                 auto_approve: '${{ github.event.inputs.force_infrastructure }}'
               }
             });
-            
+
             console.log('Infrastructure deployment triggered');
-            
+
             // Get the run ID (this is a bit tricky as the API doesn't return it directly)
             // We'll wait a moment and then find the most recent run
             await new Promise(resolve => setTimeout(resolve, 2000));
-            
+
             const runs = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'infrastructure.yml',
               per_page: 5
             });
-            
+
             const latestRun = runs.data.workflow_runs[0];
             console.log(`Latest infrastructure run ID: ${latestRun.id}`);
-            
+
             core.setOutput('completed', 'false');
             core.setOutput('run-id', latestRun.id);
 
@@ -85,7 +85,7 @@ jobs:
             let completed = false;
             let attempts = 0;
             const maxAttempts = 60; // 30 minutes max
-            
+
             while (!completed && attempts < maxAttempts) {
               attempts++;
               
@@ -111,7 +111,7 @@ jobs:
                 await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30 seconds
               }
             }
-            
+
             if (!completed) {
               core.setFailed('Infrastructure deployment timed out');
             }
@@ -145,22 +145,22 @@ jobs:
                 force_invalidation: 'true'
               }
             });
-            
+
             console.log('Application deployment triggered');
-            
+
             // Wait and find the latest run
             await new Promise(resolve => setTimeout(resolve, 2000));
-            
+
             const runs = await github.rest.actions.listWorkflowRuns({
               owner: context.repo.owner,
               repo: context.repo.repo,
               workflow_id: 'app-deploy.yml',
               per_page: 5
             });
-            
+
             const latestRun = runs.data.workflow_runs[0];
             console.log(`Latest application run ID: ${latestRun.id}`);
-            
+
             core.setOutput('completed', 'false');
             core.setOutput('run-id', latestRun.id);
 
@@ -173,7 +173,7 @@ jobs:
             let completed = false;
             let attempts = 0;
             const maxAttempts = 40; // 20 minutes max
-            
+
             while (!completed && attempts < maxAttempts) {
               attempts++;
               
@@ -199,7 +199,7 @@ jobs:
                 await new Promise(resolve => setTimeout(resolve, 30000)); // Wait 30 seconds
               }
             }
-            
+
             if (!completed) {
               core.setFailed('Application deployment timed out');
             }
@@ -215,26 +215,26 @@ jobs:
         run: |
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🚀 Orchestrated Deployment Summary
-          
+
           **Environment:** ${{ github.event.inputs.environment }}
           **Timestamp:** $(date -u)
-          
+
           ### 📊 Deployment Results
-          
+
           **Infrastructure Deployment:**
           - **Requested:** ${{ github.event.inputs.deploy_infrastructure }}
           - **Status:** ${{ needs.infrastructure-orchestration.result || 'Skipped' }}
           - **Run ID:** ${{ needs.infrastructure-orchestration.outputs.infrastructure-run-id || 'N/A' }}
-          
+
           **Application Deployment:**
           - **Requested:** ${{ github.event.inputs.deploy_application }}
           - **Status:** ${{ needs.application-orchestration.result || 'Skipped' }}
           - **Run ID:** ${{ needs.application-orchestration.outputs.application-run-id || 'N/A' }}
-          
+
           ### 🔗 Related Workflows
           ${{ needs.infrastructure-orchestration.outputs.infrastructure-run-id && format('- [Infrastructure Deployment](https://github.com/{0}/{1}/actions/runs/{2})', github.repository_owner, github.event.repository.name, needs.infrastructure-orchestration.outputs.infrastructure-run-id) || '' }}
           ${{ needs.application-orchestration.outputs.application-run-id && format('- [Application Deployment](https://github.com/{0}/{1}/actions/runs/{2})', github.repository_owner, github.event.repository.name, needs.application-orchestration.outputs.application-run-id) || '' }}
-          
+
           ### ✅ Overall Status
           ${{ (needs.infrastructure-orchestration.result == 'success' || needs.infrastructure-orchestration.result == 'skipped') && (needs.application-orchestration.result == 'success' || needs.application-orchestration.result == 'skipped') && '🎉 All requested deployments completed successfully!' || '❌ Some deployments failed or were cancelled' }}
           EOF

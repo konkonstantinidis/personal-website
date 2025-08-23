@@ -4,91 +4,91 @@ import { AnimationVariants } from '@/types'
 export const fadeInUp: AnimationVariants = {
   hidden: {
     opacity: 0,
-    y: 20
+    y: 20,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut'
-    }
-  }
+      ease: 'easeOut',
+    },
+  },
 }
 
 export const fadeInDown: AnimationVariants = {
   hidden: {
     opacity: 0,
-    y: -20
+    y: -20,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut'
-    }
-  }
+      ease: 'easeOut',
+    },
+  },
 }
 
 export const fadeInLeft: AnimationVariants = {
   hidden: {
     opacity: 0,
-    x: -20
+    x: -20,
   },
   visible: {
     opacity: 1,
     x: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut'
-    }
-  }
+      ease: 'easeOut',
+    },
+  },
 }
 
 export const fadeInRight: AnimationVariants = {
   hidden: {
     opacity: 0,
-    x: 20
+    x: 20,
   },
   visible: {
     opacity: 1,
     x: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut'
-    }
-  }
+      ease: 'easeOut',
+    },
+  },
 }
 
 export const scaleIn: AnimationVariants = {
   hidden: {
     opacity: 0,
-    scale: 0.8
+    scale: 0.8,
   },
   visible: {
     opacity: 1,
     scale: 1,
     transition: {
       duration: 0.5,
-      ease: 'easeOut'
-    }
-  }
+      ease: 'easeOut',
+    },
+  },
 }
 
 export const slideInFromBottom: AnimationVariants = {
   hidden: {
     opacity: 0,
-    y: 50
+    y: 50,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.8,
-      ease: 'easeOut'
-    }
-  }
+      ease: 'easeOut',
+    },
+  },
 }
 
 export const staggerContainer = {
@@ -96,24 +96,24 @@ export const staggerContainer = {
   visible: {
     transition: {
       staggerChildren: 0.1,
-      delayChildren: 0.2
-    }
-  }
+      delayChildren: 0.2,
+    },
+  },
 }
 
 export const staggerItem: AnimationVariants = {
   hidden: {
     opacity: 0,
-    y: 20
+    y: 20,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.5,
-      ease: 'easeOut'
-    }
-  }
+      ease: 'easeOut',
+    },
+  },
 }
 
 export const floatingAnimation = {
@@ -121,8 +121,8 @@ export const floatingAnimation = {
   transition: {
     duration: 6,
     repeat: Infinity,
-    ease: 'easeInOut'
-  }
+    ease: 'easeInOut',
+  },
 }
 
 export const pulseAnimation = {
@@ -130,8 +130,8 @@ export const pulseAnimation = {
   transition: {
     duration: 2,
     repeat: Infinity,
-    ease: 'easeInOut'
-  }
+    ease: 'easeInOut',
+  },
 }
 
 export const rotateAnimation = {
@@ -139,14 +139,14 @@ export const rotateAnimation = {
   transition: {
     duration: 20,
     repeat: Infinity,
-    ease: 'linear'
-  }
+    ease: 'linear',
+  },
 }
 
 export const bounceIn: AnimationVariants = {
   hidden: {
     opacity: 0,
-    scale: 0.3
+    scale: 0.3,
   },
   visible: {
     opacity: 1,
@@ -155,78 +155,78 @@ export const bounceIn: AnimationVariants = {
       type: 'spring',
       damping: 10,
       stiffness: 100,
-      duration: 0.8
-    }
-  }
+      duration: 0.8,
+    },
+  },
 }
 
 export const slideInFromTop: AnimationVariants = {
   hidden: {
     opacity: 0,
-    y: -50
+    y: -50,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut'
-    }
-  }
+      ease: 'easeOut',
+    },
+  },
 }
 
 export const expandWidth: AnimationVariants = {
   hidden: {
     width: 0,
-    opacity: 0
+    opacity: 0,
   },
   visible: {
     width: 'auto',
     opacity: 1,
     transition: {
       duration: 0.5,
-      ease: 'easeOut'
-    }
-  }
+      ease: 'easeOut',
+    },
+  },
 }
 
 export const morphShape: AnimationVariants = {
   hidden: {
     borderRadius: '0%',
-    scale: 0.8
+    scale: 0.8,
   },
   visible: {
     borderRadius: '50%',
     scale: 1,
     transition: {
       duration: 1,
-      ease: 'easeInOut'
-    }
-  }
+      ease: 'easeInOut',
+    },
+  },
 }
 
 // Page transition variants
 export const pageTransition = {
   hidden: {
     opacity: 0,
-    y: 20
+    y: 20,
   },
   visible: {
     opacity: 1,
     y: 0,
     transition: {
       duration: 0.5,
-      ease: 'easeOut'
-    }
+      ease: 'easeOut',
+    },
   },
   exit: {
     opacity: 0,
     y: -20,
     transition: {
       duration: 0.3,
-      ease: 'easeIn'
-    }
-  }
+      ease: 'easeIn',
+    },
+  },
 }
 
 // Timeline animation variants
@@ -235,24 +235,24 @@ export const timelineContainer = {
   visible: {
     transition: {
       staggerChildren: 0.2,
-      delayChildren: 0.1
-    }
-  }
+      delayChildren: 0.1,
+    },
+  },
 }
 
 export const timelineItem: AnimationVariants = {
   hidden: {
     opacity: 0,
-    x: -50
+    x: -50,
   },
   visible: {
     opacity: 1,
     x: 0,
     transition: {
       duration: 0.6,
-      ease: 'easeOut'
-    }
-  }
+      ease: 'easeOut',
+    },
+  },
 }
 
 // Skills grid animation
@@ -261,16 +261,16 @@ export const skillsContainer = {
   visible: {
     transition: {
       staggerChildren: 0.05,
-      delayChildren: 0.1
-    }
-  }
+      delayChildren: 0.1,
+    },
+  },
 }
 
 export const skillItem: AnimationVariants = {
   hidden: {
     opacity: 0,
     scale: 0.8,
-    y: 20
+    y: 20,
   },
   visible: {
     opacity: 1,
@@ -278,7 +278,7 @@ export const skillItem: AnimationVariants = {
     y: 0,
     transition: {
       duration: 0.4,
-      ease: 'easeOut'
-    }
-  }
+      ease: 'easeOut',
+    },
+  },
 }

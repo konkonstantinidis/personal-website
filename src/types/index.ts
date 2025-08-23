@@ -24,9 +24,9 @@ export interface Skill {
   yearsOfExperience?: number
 }
 
-export type SkillCategory = 
+export type SkillCategory =
   | 'frontend'
-  | 'backend' 
+  | 'backend'
   | 'database'
   | 'devops'
   | 'tools'
@@ -87,7 +87,8 @@ export interface SEOData {
 }
 
 // Component Props Types
-export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
+export interface ButtonProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: 'primary' | 'secondary' | 'ghost' | 'outline'
   size?: 'sm' | 'md' | 'lg'
   loading?: boolean

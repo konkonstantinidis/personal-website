@@ -28,7 +28,7 @@ on:
         default: false
         type: boolean
   workflow_run:
-    workflows: ["Infrastructure Deployment"]
+    workflows: ['Infrastructure Deployment']
     types:
       - completed
 
@@ -77,7 +77,7 @@ jobs:
         run: |
           # Initialize Terraform to access state
           terraform init -backend-config="key=portfolio-website-terraform.tfstate"
-          
+
           # Get infrastructure outputs
           if terraform output s3_bucket_name >/dev/null 2>&1; then
             S3_BUCKET=$(terraform output -raw s3_bucket_name)
@@ -149,7 +149,7 @@ jobs:
             echo "❌ Build failed: index.html not found in dist"
             exit 1
           fi
-          
+
           echo "✅ Build verification passed"
           echo "📊 Build size information:"
           du -sh dist/
@@ -247,9 +247,9 @@ jobs:
           BUCKET="${{ needs.infrastructure-check.outputs.s3-bucket }}"
           TIMESTAMP=$(date +"%Y%m%d-%H%M%S")
           BACKUP_PREFIX="backups/$TIMESTAMP"
-          
+
           echo "🔄 Creating backup of current deployment..."
-          
+
           # Check if bucket has content to backup
           if aws s3 ls "s3://$BUCKET/" --summarize | grep -q "Total Objects: 0"; then
             echo "📝 No existing content to backup"
@@ -269,17 +269,17 @@ jobs:
         run: |
           BUCKET="${{ needs.infrastructure-check.outputs.s3-bucket }}"
           DEPLOYMENT_TIME=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
-          
+
           echo "🚀 Deploying application to S3..."
           echo "deployment-time=$DEPLOYMENT_TIME" >> $GITHUB_OUTPUT
-          
+
           # Remove old content (except backups)
           echo "🧹 Cleaning old content..."
           aws s3 rm "s3://$BUCKET/" --recursive --exclude "backups/*"
-          
+
           # Upload with optimized cache headers
           echo "📤 Uploading new content..."
-          
+
           # HTML files - no cache (always check for updates)
           aws s3 sync dist/ "s3://$BUCKET/" \
             --exclude "*" \
@@ -287,7 +287,7 @@ jobs:
             --cache-control "no-cache, no-store, must-revalidate" \
             --content-type "text/html; charset=utf-8" \
             --metadata-directive REPLACE
-          
+
           # CSS and JS files with hash - long cache (1 year)
           aws s3 sync dist/ "s3://$BUCKET/" \
             --exclude "*" \
@@ -295,7 +295,7 @@ jobs:
             --include "*.js" \
             --cache-control "max-age=31536000, immutable" \
             --metadata-directive REPLACE
-          
+
           # Images and other assets - medium cache (1 month)
           aws s3 sync dist/ "s3://$BUCKET/" \
             --exclude "*" \
@@ -310,20 +310,20 @@ jobs:
             --cache-control "max-age=2592000" \
             --content-type "image/*" \
             --metadata-directive REPLACE
-          
+
           # All other files - default cache (1 day)
           aws s3 sync dist/ "s3://$BUCKET/" \
             --cache-control "max-age=86400" \
             --metadata-directive REPLACE \
             --delete
-          
+
           echo "✅ S3 deployment completed"
 
       - name: Invalidate CloudFront cache
         id: invalidate
         run: |
           DISTRIBUTION_ID="${{ needs.infrastructure-check.outputs.cloudfront-id }}"
-          
+
           if [ "${{ github.event.inputs.force_invalidation }}" == "true" ]; then
             PATHS='["/*"]'
             echo "🔄 Creating complete cache invalidation..."
@@ -332,16 +332,16 @@ jobs:
             PATHS='["/*.html", "/assets/*"]'
             echo "🔄 Creating selective cache invalidation..."
           fi
-          
+
           INVALIDATION_ID=$(aws cloudfront create-invalidation \
             --distribution-id "$DISTRIBUTION_ID" \
             --paths "/*" \
             --query 'Invalidation.Id' \
             --output text)
-          
+
           echo "✅ CloudFront invalidation created: $INVALIDATION_ID"
           echo "invalidation-id=$INVALIDATION_ID" >> $GITHUB_OUTPUT
-          
+
           # Don't wait for invalidation in production for faster deployments
           echo "⏳ Invalidation is processing in background..."
 
@@ -349,16 +349,16 @@ jobs:
         id: verify
         run: |
           WEBSITE_URL="${{ needs.infrastructure-check.outputs.website-url }}"
-          
+
           echo "🔍 Verifying deployment..."
-          
+
           # Wait a moment for S3 propagation
           sleep 5
-          
+
           # Check if the website is accessible
           MAX_ATTEMPTS=5
           ATTEMPT=1
-          
+
           while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
             echo "🌐 Attempt $ATTEMPT: Checking $WEBSITE_URL"
             
@@ -389,13 +389,13 @@ jobs:
         if: steps.verify.outputs.deployment-verified == 'true'
         run: |
           WEBSITE_URL="${{ needs.infrastructure-check.outputs.website-url }}"
-          
+
           echo "📊 Running basic performance check..."
-          
+
           # Check page load time
           LOAD_TIME=$(curl -w "@-" -o /dev/null -s "$WEBSITE_URL" <<< 'time_total: %{time_total}\n' | grep -o '[0-9.]*')
           echo "⏱️ Page load time: ${LOAD_TIME}s"
-          
+
           # Check if load time is reasonable (under 3 seconds)
           if [ $(echo "$LOAD_TIME < 3.0" | bc -l) -eq 1 ]; then
             echo "✅ Performance check passed"
@@ -404,25 +404,25 @@ jobs:
             echo "⚠️ Page load time is high: ${LOAD_TIME}s"
             echo "performance-ok=false" >> $GITHUB_OUTPUT
           fi
-          
+
           echo "load-time=$LOAD_TIME" >> $GITHUB_OUTPUT
 
       - name: Post deployment summary
         run: |
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🚀 Application Deployment Summary
-          
+
           **Environment:** Production
           **Status:** ✅ Successfully Deployed
           **Deployment Time:** ${{ steps.deploy.outputs.deployment-time }}
-          
+
           ### 📊 Deployment Details
           - **Website URL:** [${{ needs.infrastructure-check.outputs.website-url }}](${{ needs.infrastructure-check.outputs.website-url }})
           - **S3 Bucket:** \`${{ needs.infrastructure-check.outputs.s3-bucket }}\`
           - **CloudFront Distribution:** \`${{ needs.infrastructure-check.outputs.cloudfront-id }}\`
           - **Build Hash:** \`${{ needs.build.outputs.build-hash }}\`
           - **Commit:** \`${{ github.sha }}\`
-          
+
           ### ✅ Deployment Steps
           - ✅ Infrastructure readiness verified
           - ✅ Application built and tested
@@ -431,13 +431,13 @@ jobs:
           - ✅ CloudFront cache invalidated (${{ steps.invalidate.outputs.invalidation-id }})
           - ${{ steps.verify.outputs.deployment-verified == 'true' && '✅ Deployment verified' || '⚠️ Verification incomplete' }}
           - ${{ steps.performance.outputs.performance-ok == 'true' && '✅ Performance check passed' || steps.performance.outputs.performance-ok == 'false' && '⚠️ Performance needs attention' || '📝 Performance check skipped' }}
-          
+
           ### 📈 Performance Metrics
           ${{ steps.performance.outputs.load-time && format('- **Page Load Time:** {0}s', steps.performance.outputs.load-time) || '- Performance metrics not available' }}
-          
+
           ### 🌐 Access Your Website
           [View Website](${{ needs.infrastructure-check.outputs.website-url }})
-          
+
           ${{ steps.backup.outputs.backup-created == 'true' && format('### 🔄 Rollback Information\n- **Backup Location:** s3://{0}/{1}\n- Use infrastructure workflow to rollback if needed', needs.infrastructure-check.outputs.s3-bucket, steps.backup.outputs.backup-prefix) || '' }}
           EOF
 
@@ -464,10 +464,10 @@ jobs:
         id: backups
         run: |
           BUCKET="${{ needs.infrastructure-check.outputs.s3-bucket }}"
-          
+
           echo "🔍 Searching for recent backups..."
           LATEST_BACKUP=$(aws s3 ls "s3://$BUCKET/backups/" | sort | tail -n 1 | awk '{print $2}' | sed 's|/||')
-          
+
           if [ -n "$LATEST_BACKUP" ]; then
             echo "📂 Latest backup found: $LATEST_BACKUP"
             echo "latest-backup=$LATEST_BACKUP" >> $GITHUB_OUTPUT
@@ -482,37 +482,37 @@ jobs:
         run: |
           BUCKET="${{ needs.infrastructure-check.outputs.s3-bucket }}"
           BACKUP_PREFIX="${{ steps.backups.outputs.latest-backup }}"
-          
+
           echo "🔄 Rolling back to backup: $BACKUP_PREFIX"
-          
+
           # Clear current content
           aws s3 rm "s3://$BUCKET/" --recursive --exclude "backups/*"
-          
+
           # Restore from backup
           aws s3 sync "s3://$BUCKET/backups/$BACKUP_PREFIX/" "s3://$BUCKET/" \
             --delete \
             --exclude "backups/*"
-          
+
           # Invalidate CloudFront cache
           aws cloudfront create-invalidation \
             --distribution-id "${{ needs.infrastructure-check.outputs.cloudfront-id }}" \
             --paths "/*"
-          
+
           echo "✅ Rollback completed"
 
       - name: Rollback summary
         run: |
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🔄 Rollback Summary
-          
+
           **Status:** ${{ steps.backups.outputs.backup-available == 'true' && '✅ Rollback Completed' || '❌ Rollback Failed' }}
           **Backup Used:** ${{ steps.backups.outputs.latest-backup || 'None available' }}
-          
+
           ### 🔍 Next Steps
           - Investigate the deployment failure
           - Fix the issues in the code
           - Redeploy when ready
-          
+
           [View Website](${{ needs.infrastructure-check.outputs.website-url }})
           EOF
 
@@ -527,18 +527,18 @@ jobs:
         run: |
           echo "🚨 Application deployment failed!"
           echo "Please check the workflow logs for details."
-          
+
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🚨 Deployment Failure
-          
+
           The application deployment has failed. Please review the workflow logs and take appropriate action.
-          
+
           ### 🔍 Troubleshooting Steps
           1. Check the failed job logs for specific error messages
           2. Verify infrastructure is properly deployed
           3. Ensure all secrets and environment variables are configured
           4. Check for any breaking changes in the code
-          
+
           ### 🔧 Recovery Options
           - Fix the issue and push a new commit
           - Use manual workflow dispatch to retry deployment

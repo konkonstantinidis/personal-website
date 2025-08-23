@@ -7,7 +7,7 @@ export const socialLinks: SocialLink[] = [
     url: 'https://linkedin.com/in/konstantinos-konstantinidis',
     icon: 'Linkedin',
     username: 'Konstantinos Konstantinidis',
-    color: '#0077B5'
+    color: '#0077B5',
   },
   {
     id: 'email',
@@ -15,7 +15,7 @@ export const socialLinks: SocialLink[] = [
     url: 'mailto:kkonstancc@gmail.com',
     icon: 'Mail',
     username: 'kkonstancc@gmail.com',
-    color: '#EA4335'
+    color: '#EA4335',
   },
   {
     id: 'phone',
@@ -23,8 +23,8 @@ export const socialLinks: SocialLink[] = [
     url: 'tel:+306940277271',
     icon: 'Phone',
     username: '+30 694 027 7271',
-    color: '#4CAF50'
-  }
+    color: '#4CAF50',
+  },
 ]
 
 export const navigationItems: NavigationItem[] = [
@@ -32,26 +32,26 @@ export const navigationItems: NavigationItem[] = [
     id: 'about',
     label: 'About',
     href: '#about',
-    icon: 'User'
+    icon: 'User',
   },
   {
     id: 'experience',
     label: 'Experience',
     href: '#experience',
-    icon: 'Briefcase'
+    icon: 'Briefcase',
   },
   {
     id: 'skills',
     label: 'Skills',
     href: '#skills',
-    icon: 'Code'
+    icon: 'Code',
   },
   {
     id: 'contact',
     label: 'Contact',
     href: '#contact',
-    icon: 'MessageCircle'
-  }
+    icon: 'MessageCircle',
+  },
 ]
 
 export const contactInfo: ContactInfo = {
@@ -59,12 +59,13 @@ export const contactInfo: ContactInfo = {
   phone: '+30 694 027 7271',
   location: 'Thessaloniki, Greece',
   timezone: 'EET (UTC+2)',
-  availability: 'Open to opportunities'
+  availability: 'Open to opportunities',
 }
 
 export const seoData: SEOData = {
   title: 'Konstantinos Konstantinidis - DevOps & Infrastructure Engineer',
-  description: 'Experienced DevOps & Infrastructure Engineer with 6+ years of expertise in AWS, Kubernetes, Terraform, and scalable cloud architectures.',
+  description:
+    'Experienced DevOps & Infrastructure Engineer with 6+ years of expertise in AWS, Kubernetes, Terraform, and scalable cloud architectures.',
   keywords: [
     'devops engineer',
     'aws solutions architect',
@@ -75,10 +76,10 @@ export const seoData: SEOData = {
     'ci/cd',
     'containerization',
     'docker',
-    'cloud migration'
+    'cloud migration',
   ],
   author: 'Konstantinos Konstantinidis',
   url: 'https://konstantinos.dev',
   image: '/og-image.jpg',
-  twitterHandle: ''
+  twitterHandle: '',
 }

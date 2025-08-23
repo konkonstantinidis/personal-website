@@ -20,6 +20,7 @@ This Terraform configuration deploys a static website hosting infrastructure on 
 ## Quick Start
 
 1. **Copy the example variables file:**
+
    ```bash
    cp terraform.tfvars.example terraform.tfvars
    ```
@@ -27,6 +28,7 @@ This Terraform configuration deploys a static website hosting infrastructure on 
 2. **Edit terraform.tfvars** with your specific configuration (the example is already configured for your domain)
 
 3. **Initialize and apply Terraform:**
+
    ```bash
    terraform init
    terraform plan
@@ -34,11 +36,12 @@ This Terraform configuration deploys a static website hosting infrastructure on 
    ```
 
 4. **Deploy your website:**
+
    ```bash
    # Build your React app first
    cd ..
    npm run build
-   
+
    # Deploy using the automated script
    cd terraform
    ./deploy.sh
@@ -62,9 +65,11 @@ This Terraform configuration deploys a static website hosting infrastructure on 
 ## Domain Setup
 
 ### Without Custom Domain
+
 The website will be accessible via CloudFront's default domain (e.g., `d123456789.cloudfront.net`).
 
 ### With Custom Domain
+
 1. Set `domain_name` in `terraform.tfvars`
 2. For automatic DNS management:
    - Ensure Route53 hosted zone exists for your domain
@@ -95,17 +100,20 @@ aws cloudfront create-invalidation --distribution-id DISTRIBUTION_ID --paths "/*
 ## Additional Recommended Services
 
 ### Essential Services
+
 1. **AWS WAF**: Web application firewall for DDoS protection and security filtering
 2. **CloudWatch**: Monitoring and logging for performance insights
 3. **AWS Backup**: Automated S3 bucket backups
 
 ### Enhanced Features
+
 4. **Lambda@Edge**: Dynamic content processing at edge locations
 5. **API Gateway**: Backend API integration
 6. **Cognito**: User authentication and authorization
 7. **SES**: Email functionality for contact forms
 
 ### DevOps & CI/CD
+
 8. **CodePipeline**: Automated deployment pipeline
 9. **CodeBuild**: Build and test automation
 10. **Parameter Store/Secrets Manager**: Configuration and secrets management
@@ -119,6 +127,7 @@ aws cloudfront create-invalidation --distribution-id DISTRIBUTION_ID --paths "/*
 ## Outputs
 
 After deployment, Terraform provides:
+
 - S3 bucket details
 - CloudFront distribution information
 - Website URL
@@ -128,6 +137,7 @@ After deployment, Terraform provides:
 ## Cleanup
 
 To destroy the infrastructure:
+
 ```bash
 # Empty S3 bucket first
 aws s3 rm s3://your-bucket-name --recursive
@@ -139,6 +149,7 @@ terraform destroy
 ## Support
 
 For issues or questions:
+
 1. Check AWS CloudFormation events
 2. Review CloudFront logs
 3. Verify DNS propagation (for custom domains)

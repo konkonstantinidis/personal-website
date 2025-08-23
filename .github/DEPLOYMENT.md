@@ -5,6 +5,7 @@ This guide walks you through setting up the complete CI/CD pipeline for your Rea
 ## Overview
 
 The deployment pipeline consists of:
+
 - **Infrastructure Workflow** (`infrastructure.yml`): Manages AWS resources with Terraform
 - **Application Workflow** (`app-deploy.yml`): Builds and deploys React app
 - **PR Preview Workflow** (`pr-preview.yml`): Builds and tests pull requests
@@ -28,6 +29,7 @@ Add these secrets to your GitHub repository (Settings → Secrets and Variables 
 ### 2. Deploy Infrastructure
 
 Use the manual workflow dispatch to deploy your AWS infrastructure:
+
 1. Go to Actions tab in GitHub
 2. Select "Deploy Infrastructure" workflow
 3. Click "Run workflow" → Choose "apply" action
@@ -35,22 +37,26 @@ Use the manual workflow dispatch to deploy your AWS infrastructure:
 ### 3. Deploy Application
 
 Push to `main` branch or use manual workflow dispatch:
+
 - Application will automatically deploy on push to main
 - Or manually trigger "Deploy Application" workflow
 
 ## Workflow Details
 
 ### Infrastructure Workflow (`infrastructure.yml`)
+
 - **Triggers**: Manual dispatch, terraform/ directory changes, weekly drift detection
 - **Features**: Terraform plan/apply/destroy, security scanning, approval gates
 - **Permissions**: Full Terraform and AWS infrastructure access
 
 ### Application Workflow (`app-deploy.yml`)
+
 - **Triggers**: Push to main (excluding terraform/ changes), manual dispatch
 - **Features**: React build, S3 upload, CloudFront invalidation, health checks
 - **Permissions**: S3 write, CloudFront invalidation only
 
 ### PR Preview Workflow (`pr-preview.yml`)
+
 - **Triggers**: Pull requests to main
 - **Features**: Build validation, linting, type checking
 - **Permissions**: Read-only (no AWS access)

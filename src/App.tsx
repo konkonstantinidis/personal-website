@@ -9,7 +9,7 @@ function App() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
       <Navigation />
-      
+
       <main>
         <About
           name="Konstantinos Konstantinidis"
@@ -19,13 +19,13 @@ function App() {
           email="kkonstancc@gmail.com"
           linkedinUrl="https://linkedin.com/in/konstantinos-konstantinidis"
         />
-        
+
         <ExperienceComponent experiences={experiences} />
-        
+
         <Skills />
       </main>
 
-      <Contact 
+      <Contact
         email="kkonstancc@gmail.com"
         linkedinUrl="https://linkedin.com/in/konstantinos-konstantinidis"
         calendlyUrl="https://calendly.com/kkonstancc"
@@ -36,7 +36,8 @@ function App() {
         <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
           <div className="text-center">
             <p className="text-gray-600 dark:text-gray-400">
-              © {new Date().getFullYear()} Konstantinos Konstantinidis. Built with React, TypeScript, and Tailwind CSS.
+              © {new Date().getFullYear()} Konstantinos Konstantinidis. Built
+              with React, TypeScript, and Tailwind CSS.
             </p>
           </div>
         </div>

@@ -99,7 +99,7 @@ jobs:
       name: production
       url: https://konstantinos-konstantinidis.gr
     permissions:
-      id-token: write   # Required for OIDC
+      id-token: write # Required for OIDC
       contents: read
     steps:
       - name: Checkout code
@@ -133,7 +133,7 @@ jobs:
         working-directory: terraform
         run: |
           terraform init -backend=false
-          
+
           # Get outputs from state (assuming state is stored remotely)
           # If using local state, you might need to initialize with backend config
           echo "s3-bucket=$(terraform output -raw s3_bucket_name)" >> $GITHUB_OUTPUT
@@ -143,7 +143,7 @@ jobs:
       - name: Deploy to S3
         run: |
           # Set optimal cache headers for different file types
-          
+
           # HTML files - no cache (always check for updates)
           aws s3 sync dist/ s3://${{ steps.terraform.outputs.s3-bucket }}/ \
             --exclude "*" \
@@ -151,7 +151,7 @@ jobs:
             --cache-control "no-cache, no-store, must-revalidate" \
             --metadata-directive REPLACE \
             --delete
-          
+
           # CSS and JS files with hash - long cache (1 year)
           aws s3 sync dist/ s3://${{ steps.terraform.outputs.s3-bucket }}/ \
             --exclude "*" \
@@ -159,7 +159,7 @@ jobs:
             --include "*.js" \
             --cache-control "max-age=31536000, immutable" \
             --metadata-directive REPLACE
-          
+
           # Images and other assets - medium cache (1 month)
           aws s3 sync dist/ s3://${{ steps.terraform.outputs.s3-bucket }}/ \
             --exclude "*" \
@@ -173,7 +173,7 @@ jobs:
             --include "*.webmanifest" \
             --cache-control "max-age=2592000" \
             --metadata-directive REPLACE
-          
+
           # All other files - default cache (1 day)
           aws s3 sync dist/ s3://${{ steps.terraform.outputs.s3-bucket }}/ \
             --cache-control "max-age=86400" \
@@ -188,27 +188,27 @@ jobs:
             --paths "/*" \
             --query 'Invalidation.Id' \
             --output text)
-          
+
           echo "Created CloudFront invalidation: $INVALIDATION_ID"
           echo "invalidation-id=$INVALIDATION_ID" >> $GITHUB_OUTPUT
-          
+
           # Wait for invalidation to complete (optional - can be removed for faster deploys)
           echo "Waiting for invalidation to complete..."
           aws cloudfront wait invalidation-completed \
             --distribution-id ${{ steps.terraform.outputs.cloudfront-id }} \
             --id $INVALIDATION_ID
-          
+
           echo "CloudFront cache invalidation completed"
 
       - name: Verify deployment
         run: |
           # Wait a moment for propagation
           sleep 10
-          
+
           # Check if the website is accessible
           WEBSITE_URL="${{ steps.terraform.outputs.website-url }}"
           HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$WEBSITE_URL")
-          
+
           if [ "$HTTP_STATUS" = "200" ]; then
             echo "✅ Website is accessible at $WEBSITE_URL"
           else
@@ -220,18 +220,18 @@ jobs:
         run: |
           cat >> $GITHUB_STEP_SUMMARY << EOF
           ## 🚀 Deployment Summary
-          
+
           **Environment:** Production
           **Website URL:** ${{ steps.terraform.outputs.website-url }}
           **S3 Bucket:** ${{ steps.terraform.outputs.s3-bucket }}
           **CloudFront Distribution:** ${{ steps.terraform.outputs.cloudfront-id }}
           **Commit:** \`${{ github.sha }}\`
-          
+
           ### 📊 Deployment Details
           - ✅ Build artifacts uploaded to S3
           - ✅ CloudFront cache invalidated
           - ✅ Website accessibility verified
-          
+
           ### 🌐 Access Your Website
           [View Website](${{ steps.terraform.outputs.website-url }})
           EOF

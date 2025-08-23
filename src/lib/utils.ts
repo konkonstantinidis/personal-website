@@ -15,14 +15,17 @@ export function formatDate(dateString: string): string {
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
-    month: 'long'
+    month: 'long',
   })
 }
 
 /**
  * Calculate years of experience from start date to end date (or current date)
  */
-export function calculateYearsOfExperience(startDate: string, endDate?: string): number {
+export function calculateYearsOfExperience(
+  startDate: string,
+  endDate?: string
+): number {
   const start = new Date(startDate)
   const end = endDate ? new Date(endDate) : new Date()
   const diffTime = Math.abs(end.getTime() - start.getTime())
@@ -69,7 +72,8 @@ export function isInViewport(element: Element): boolean {
   return (
     rect.top >= 0 &&
     rect.left >= 0 &&
-    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.bottom <=
+      (window.innerHeight || document.documentElement.clientHeight) &&
     rect.right <= (window.innerWidth || document.documentElement.clientWidth)
   )
 }
@@ -83,7 +87,7 @@ export function scrollToElement(elementId: string, offset: number = 0): void {
     const elementPosition = element.offsetTop - offset
     window.scrollTo({
       top: elementPosition,
-      behavior: 'smooth'
+      behavior: 'smooth',
     })
   }
 }
@@ -97,7 +101,7 @@ export function getInitialTheme(): 'light' | 'dark' {
     if (stored === 'light' || stored === 'dark') {
       return stored
     }
-    
+
     if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
       return 'dark'
     }
@@ -139,11 +143,11 @@ export function isValidEmail(email: string): boolean {
  */
 export function formatFileSize(bytes: number): string {
   if (bytes === 0) return '0 Bytes'
-  
+
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 

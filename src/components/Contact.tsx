@@ -12,7 +12,7 @@ export function Contact({
   email = 'kkonstancc@gmail.com',
   linkedinUrl = 'https://linkedin.com/in/konstantinos-konstantinidis',
   calendlyUrl = 'https://calendly.com/your-username', // You'll need to set up Calendly
-  location = 'Thessaloniki, Greece'
+  location = 'Thessaloniki, Greece',
 }: ContactProps) {
   const contactMethods = [
     {
@@ -26,8 +26,8 @@ export function Contact({
       action: {
         href: `mailto:${email}?subject=Hello from your portfolio&body=Hi Konstantinos,%0D%0A%0D%0AI'd like to get in touch with you regarding...%0D%0A%0D%0ABest regards`,
         label: 'Send Email',
-        icon: Send
-      }
+        icon: Send,
+      },
     },
     {
       id: 'calendly',
@@ -41,8 +41,8 @@ export function Contact({
         href: calendlyUrl,
         label: 'Book Meeting',
         icon: Clock,
-        external: true
-      }
+        external: true,
+      },
     },
     {
       id: 'linkedin',
@@ -56,14 +56,14 @@ export function Contact({
         href: linkedinUrl,
         label: 'Connect',
         icon: Linkedin,
-        external: true
-      }
-    }
+        external: true,
+      },
+    },
   ]
 
   return (
-    <section 
-      id="contact" 
+    <section
+      id="contact"
       className="relative bg-gray-50 dark:bg-gray-900 py-20"
       aria-labelledby="contact-heading"
     >
@@ -77,7 +77,7 @@ export function Contact({
               transition={{ duration: 0.6 }}
               viewport={{ once: true }}
             >
-              <h2 
+              <h2
                 id="contact-heading"
                 className="mb-4 text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl"
               >
@@ -85,8 +85,9 @@ export function Contact({
               </h2>
               <div className="mx-auto h-1 w-20 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full mb-6" />
               <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-                Ready to discuss your next DevOps project or explore collaboration opportunities? 
-                I'd love to hear from you. Choose your preferred way to connect.
+                Ready to discuss your next DevOps project or explore
+                collaboration opportunities? I'd love to hear from you. Choose
+                your preferred way to connect.
               </p>
             </motion.div>
           </div>
@@ -96,7 +97,7 @@ export function Contact({
             {contactMethods.map((method, index) => {
               const IconComponent = method.icon
               const ActionIcon = method.action.icon
-              
+
               return (
                 <motion.div
                   key={method.id}
@@ -108,7 +109,9 @@ export function Contact({
                 >
                   <div className="h-full bg-white dark:bg-gray-800 rounded-xl p-8 shadow-sm border border-gray-200 dark:border-gray-700 transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                     {/* Icon */}
-                    <div className={`inline-flex items-center justify-center w-16 h-16 rounded-lg bg-gradient-to-r ${method.color} mb-6 text-white transform transition-transform group-hover:scale-110`}>
+                    <div
+                      className={`inline-flex items-center justify-center w-16 h-16 rounded-lg bg-gradient-to-r ${method.color} mb-6 text-white transform transition-transform group-hover:scale-110`}
+                    >
                       <IconComponent className="w-8 h-8" />
                     </div>
 
@@ -129,7 +132,11 @@ export function Contact({
                     <a
                       href={method.action.href}
                       target={method.action.external ? '_blank' : undefined}
-                      rel={method.action.external ? 'noopener noreferrer' : undefined}
+                      rel={
+                        method.action.external
+                          ? 'noopener noreferrer'
+                          : undefined
+                      }
                       className={`inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-gradient-to-r ${method.color} ${method.hoverColor} text-white font-medium transition-all duration-300 hover:scale-105 hover:shadow-md`}
                     >
                       <ActionIcon className="w-4 h-4" />
@@ -137,7 +144,9 @@ export function Contact({
                     </a>
 
                     {/* Hover gradient overlay */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${method.color} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity duration-300 pointer-events-none`} />
+                    <div
+                      className={`absolute inset-0 bg-gradient-to-br ${method.color} opacity-0 group-hover:opacity-5 rounded-xl transition-opacity duration-300 pointer-events-none`}
+                    />
                   </div>
                 </motion.div>
               )

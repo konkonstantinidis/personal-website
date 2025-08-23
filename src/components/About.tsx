@@ -12,13 +12,13 @@ export interface AboutProps {
 }
 
 export function About({
-  name = "Your Name",
-  title = "Frontend Developer",
-  location = "San Francisco, CA",
+  name = 'Your Name',
+  title = 'Frontend Developer',
+  location = 'San Francisco, CA',
   bio = "I'm a passionate frontend developer with expertise in React, TypeScript, and modern web technologies. I love creating beautiful, accessible, and performant user experiences that make a difference.",
-  email = "your@email.com",
-  linkedinUrl = "https://linkedin.com/in/yourusername",
-  avatarUrl
+  email = 'your@email.com',
+  linkedinUrl = 'https://linkedin.com/in/yourusername',
+  avatarUrl,
 }: AboutProps) {
   const socialLinks = [
     {
@@ -26,27 +26,27 @@ export function About({
       url: linkedinUrl || 'https://linkedin.com/in/konstantinos-konstantinidis',
       icon: Linkedin,
       color: 'hover:text-blue-600 dark:hover:text-blue-400',
-      description: 'Connect with me on LinkedIn'
+      description: 'Connect with me on LinkedIn',
     },
     {
       name: 'Email',
       url: `mailto:${email}`,
       icon: Mail,
       color: 'hover:text-green-600 dark:hover:text-green-400',
-      description: 'Send me an email'
+      description: 'Send me an email',
     },
     {
       name: 'Phone',
       url: 'tel:+306940277271',
       icon: Phone,
       color: 'hover:text-blue-500 dark:hover:text-blue-300',
-      description: 'Call me'
-    }
+      description: 'Call me',
+    },
   ]
 
   return (
-    <section 
-      id="about" 
+    <section
+      id="about"
       className="relative mx-auto max-w-7xl px-4 py-20 sm:px-6 lg:px-8 overflow-hidden"
       aria-labelledby="about-heading"
     >
@@ -54,7 +54,7 @@ export function About({
       <div className="relative z-10 mx-auto max-w-4xl">
         {/* Section Header */}
         <div className="mb-16 text-center">
-          <h2 
+          <h2
             id="about-heading"
             className="mb-4 text-3xl font-bold text-gray-900 dark:text-white sm:text-4xl"
           >
@@ -103,9 +103,13 @@ export function About({
 
               {/* Action Button */}
               <div className="flex justify-center">
-                <a 
+                <a
                   href="#contact"
-                  onClick={() => document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' })}
+                  onClick={() =>
+                    document
+                      .getElementById('contact')
+                      ?.scrollIntoView({ behavior: 'smooth' })
+                  }
                   className="inline-flex h-11 items-center justify-center gap-2 rounded-md bg-gradient-to-r from-blue-500 to-purple-600 px-5 text-sm font-medium text-white transition-all duration-300 hover:from-blue-600 hover:to-purple-700 hover:scale-105"
                 >
                   <Mail className="h-4 w-4" aria-hidden="true" />
@@ -123,14 +127,14 @@ export function About({
                 Hello there! 👋
               </h3>
               <div className="prose prose-lg text-gray-600 dark:text-gray-300">
-                <p className="mb-4 leading-relaxed">
-                  {bio}
-                </p>
+                <p className="mb-4 leading-relaxed">{bio}</p>
                 <p className="leading-relaxed">
-                  When I'm not architecting cloud solutions, you can find me exploring new DevOps technologies, 
-                  automating complex infrastructure deployments, or sharing my expertise with the engineering community. 
-                  I believe in building resilient, scalable, and secure infrastructure that enables teams to deliver 
-                  exceptional products efficiently.
+                  When I'm not architecting cloud solutions, you can find me
+                  exploring new DevOps technologies, automating complex
+                  infrastructure deployments, or sharing my expertise with the
+                  engineering community. I believe in building resilient,
+                  scalable, and secure infrastructure that enables teams to
+                  deliver exceptional products efficiently.
                 </p>
               </div>
             </div>
@@ -141,7 +145,16 @@ export function About({
                 What I Love Working With
               </h3>
               <div className="flex flex-wrap gap-2">
-                {['AWS', 'Kubernetes', 'Docker', 'Terraform', 'Jenkins', 'GitOps', 'Prometheus', 'Ansible'].map((skill) => (
+                {[
+                  'AWS',
+                  'Kubernetes',
+                  'Docker',
+                  'Terraform',
+                  'Jenkins',
+                  'GitOps',
+                  'Prometheus',
+                  'Ansible',
+                ].map(skill => (
                   <span
                     key={skill}
                     className="rounded-full bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-200 hover:scale-110 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
@@ -164,13 +177,19 @@ export function About({
                       <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
                         MSc in Advanced Computer Science - Cloud Computing
                       </h4>
-                      <p className="text-blue-600 dark:text-blue-400">University of Leeds, School of Computing</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Leeds, United Kingdom</p>
+                      <p className="text-blue-600 dark:text-blue-400">
+                        University of Leeds, School of Computing
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        Leeds, United Kingdom
+                      </p>
                       <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                         Grade: 6.20/10.0 • Head of School Scholarship recipient
                       </p>
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Dissertation: "Energy Efficiency Driven Resource Scalability for Big Data on the Cloud" (Distinction - 76.0/100.0)
+                        Dissertation: "Energy Efficiency Driven Resource
+                        Scalability for Big Data on the Cloud" (Distinction -
+                        76.0/100.0)
                       </p>
                     </div>
                   </div>
@@ -181,13 +200,18 @@ export function About({
                       <h4 className="text-lg font-semibold text-gray-900 dark:text-white">
                         BSc in Computer Science
                       </h4>
-                      <p className="text-blue-600 dark:text-blue-400">Alexander Technological Education Institute</p>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">Thessaloniki, Greece</p>
+                      <p className="text-blue-600 dark:text-blue-400">
+                        Alexander Technological Education Institute
+                      </p>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
+                        Thessaloniki, Greece
+                      </p>
                       <p className="mt-2 text-sm text-gray-600 dark:text-gray-300">
                         Grade: 7.01/10.0
                       </p>
                       <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Thesis: "Lab as a Service (Image Distribution as a Cloud Service)" (Grade: 10.0/10.0)
+                        Thesis: "Lab as a Service (Image Distribution as a Cloud
+                        Service)" (Grade: 10.0/10.0)
                       </p>
                     </div>
                   </div>
@@ -202,16 +226,41 @@ export function About({
               </h3>
               <div className="grid gap-4 sm:grid-cols-2">
                 {[
-                  { name: 'AWS Certified Solutions Architect – Professional', date: 'November 2022' },
-                  { name: 'AWS Certified DevOps Engineer – Professional', date: 'September 2021' },
-                  { name: 'AWS Developer Associate Certification', date: 'June 2018' },
-                  { name: 'AWS SysOps Administrator Associate', date: 'September 2018' },
-                  { name: 'Azure Fundamentals (AZ-900) Certified', date: 'September 2020' },
-                  { name: 'Google Cloud Platform - Certified Associate', date: 'July 2020' }
-                ].map((cert) => (
-                  <div key={cert.name} className="rounded-lg bg-white p-4 shadow-sm dark:bg-gray-800">
-                    <h4 className="font-medium text-gray-900 dark:text-white">{cert.name}</h4>
-                    <p className="text-sm text-gray-600 dark:text-gray-300">{cert.date}</p>
+                  {
+                    name: 'AWS Certified Solutions Architect – Professional',
+                    date: 'November 2022',
+                  },
+                  {
+                    name: 'AWS Certified DevOps Engineer – Professional',
+                    date: 'September 2021',
+                  },
+                  {
+                    name: 'AWS Developer Associate Certification',
+                    date: 'June 2018',
+                  },
+                  {
+                    name: 'AWS SysOps Administrator Associate',
+                    date: 'September 2018',
+                  },
+                  {
+                    name: 'Azure Fundamentals (AZ-900) Certified',
+                    date: 'September 2020',
+                  },
+                  {
+                    name: 'Google Cloud Platform - Certified Associate',
+                    date: 'July 2020',
+                  },
+                ].map(cert => (
+                  <div
+                    key={cert.name}
+                    className="rounded-lg bg-white p-4 shadow-sm dark:bg-gray-800"
+                  >
+                    <h4 className="font-medium text-gray-900 dark:text-white">
+                      {cert.name}
+                    </h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">
+                      {cert.date}
+                    </p>
                   </div>
                 ))}
               </div>
@@ -223,20 +272,24 @@ export function About({
                 Let's Connect
               </h3>
               <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-                {socialLinks.map((link) => {
+                {socialLinks.map(link => {
                   const IconComponent = link.icon
                   return (
                     <a
                       key={link.name}
                       href={link.url}
                       target={link.name !== 'Email' ? '_blank' : undefined}
-                      rel={link.name !== 'Email' ? 'noopener noreferrer' : undefined}
+                      rel={
+                        link.name !== 'Email'
+                          ? 'noopener noreferrer'
+                          : undefined
+                      }
                       className={`group flex flex-col items-center rounded-xl bg-white p-6 shadow-sm transition-all duration-300 hover:shadow-lg hover:scale-105 hover:-translate-y-1 dark:bg-gray-800 dark:hover:bg-gray-700 ${link.color}`}
                       aria-label={link.description}
                     >
                       <div className="group-hover:rotate-360 transition-transform duration-600">
-                        <IconComponent 
-                          className="mb-3 h-8 w-8 transition-transform duration-300 group-hover:scale-110" 
+                        <IconComponent
+                          className="mb-3 h-8 w-8 transition-transform duration-300 group-hover:scale-110"
                           aria-hidden="true"
                         />
                       </div>
