@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 1.0"
+  required_version = ">= 1.10"
 
   required_providers {
     aws = {
@@ -13,5 +13,6 @@ terraform {
     key = "portfolio-website-terraform.tfstate"
     region = "eu-west-1"
     encrypt = true
+    use_lockfile = true
   }
 }
