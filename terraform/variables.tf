@@ -4,15 +4,6 @@ variable "aws_region" {
   default     = "eu-west-1"
 }
 
-variable "bucket_name" {
-  description = "Name of the S3 bucket for website hosting"
-  type        = string
-  validation {
-    condition     = can(regex("^[a-z0-9][a-z0-9-]*[a-z0-9]$", var.bucket_name))
-    error_message = "Bucket name must be lowercase, contain only letters, numbers, and hyphens, and not start or end with a hyphen."
-  }
-}
-
 variable "domain_name" {
   description = "Domain name for the website (e.g., example.com). Leave empty to use CloudFront domain"
   type        = string
